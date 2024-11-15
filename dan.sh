@@ -72,7 +72,7 @@ preinstall_l2tp(){
 install_l2tp(){
     mknod /dev/random c 1 9
     yum -y install epel-*
-    yum -y install ppp libreswan xl2tpd iptables iptables-services
+    yum -y install ppp libreswan xl2tpd iptables iptables-services firewalld
     yum_install
 }
 
@@ -110,7 +110,6 @@ conn l2tp-psk-nonat
     dpdtimeout=130
     dpdaction=clear
     sha2
-
 EOF
 
     # 配置 IPSec 秘钥
@@ -146,8 +145,8 @@ noccp
 auth
 hide-password
 idle 0
-mtu 1410
-mru 1410
+mtu 1400
+mru 1400
 nodefaultroute
 debug
 proxyarp
@@ -174,10 +173,10 @@ yum_install(){
     sysctl -p
 
     # 开放必要的防火墙端口
-    iptables -A INPUT -p udp --dport 500 -j ACCEPT
-    iptables -A INPUT -p udp --dport 4500 -j ACCEPT
-    iptables -A INPUT -p udp --dport 1701 -j ACCEPT
-    service iptables save
+    firewall-cmd --zone=public --add-port=500/udp --permanent
+    firewall-cmd --zone=public --add-port=4500/udp --permanent
+    firewall-cmd --zone=public --add-port=1701/udp --permanent
+    firewall-cmd --reload
 
     # 重启服务
     systemctl restart ipsec
